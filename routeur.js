@@ -18,7 +18,7 @@ routeur.get("/livres", (requete, reponse)=>{
     livreSchema.find()
     .exec()
     .then(livres => {
-         reponse.render("livres/liste.html.twig", {liste: livres})
+         reponse.render("livres/liste.html.twig", {liste: livres, message:reponse.locals.message})
     })
     .catch();
    
@@ -57,6 +57,10 @@ routeur.post("/livres/delete/:id", (requete,reponse) => {
     livreSchema.findByIdAndDelete({_id:requete.params.id})
     .exec()
     .then(resultat => {
+        requete.session.message = {
+            type : 'success',
+            contenu : 'Suppression effectuée'
+        }
         reponse.redirect("/livres")
     })
     .catch(error => {
