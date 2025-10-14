@@ -42,11 +42,24 @@ routeur.post("/livres", (requete, reponse)=>{
     })
 });
 
+//afficher desc livre 
 routeur.get("/livres/:id", (requete,reponse) => {
     livreSchema.findById(requete.params.id)
     .exec()
     .then(livre => {
-        reponse.render("livres/livre.html.twig",{livre : livre})
+        reponse.render("livres/livre.html.twig",{livre : livre, isModification:false})
+    })
+    .catch(error => {
+        console.log(error);
+    });
+})
+
+//edit livre 
+routeur.get("/livre/modification/:id", (requete,reponse)=> {
+  livreSchema.findById(requete.params.id)
+    .exec()
+    .then(livre => {
+        reponse.render("livres/livre.html.twig",{livre : livre, isModification:true})
     })
     .catch(error => {
         console.log(error);
@@ -67,7 +80,6 @@ routeur.post("/livres/delete/:id", (requete,reponse) => {
         console.log(error);
     });
 });
-
 
 routeur.use((requete, reponse,suite)=>{
     const error = new Error("page pas trouvée");

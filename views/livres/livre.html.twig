@@ -2,18 +2,49 @@
 
 {% block titre %} {{livre.nom}}{% endblock %}
 {% block contenu %} 
+            {% if isModification %}
+
+            <form method="POST" action="">
+                <div class="row m-2">
+                    <div class="col-6">
+                        <h2>Informations : </h2>
+                            <div class="form-group">
+                                <label for="titre">Titre</label>
+                                <input type="text" class="form-control" id="titre" name="titre" value="{{livre.nom}}">
+                            </div>
+                            <div class="form-group">
+                                <label for="auteur">Auteur</label>
+                                <input type="text" class="form-control" id="auteur" name="auteur" value="{{livre.auteur}}">
+                            </div>
+                            <div class="form-group">
+                                <label for="pages">Pages</label>
+                                <input type="number" class="form-control" id="pages" name="pages" value="{{livre.pages}}">
+                            </div>
+                    </div>
+                    <div class="col-6">
+                        <h2>Résumé : </h2>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea class="form-control" id="desc" name="desc" rows="3">{{livre.desc}}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <input type="submit" class="btn btn-primary w-100"  value="Valider">
+            </form>
+            {% else %}
     <div class="row m-2">
         <div class="col-6">
             <h2>Informations : </h2>
             <div>Auteur : {{livre.auteur}}</div>
             <div>Nombre de pages : {{livre.pages}}</div>
             <img src="https://picsum.photos/200/200">
+            {% endif %}
         </div>
-        <div class="col-6">
+        {# <div class="col-6">
             <h2>Résumé : </h2>
             <div>
             {{livre.desc}}
             </div>
-        </div>
+        </div> #}
     </div>
 {% endblock %}
