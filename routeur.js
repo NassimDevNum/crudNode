@@ -66,6 +66,27 @@ routeur.get("/livre/modification/:id", (requete,reponse)=> {
     });
 })
 
+routeur.post("/livres/modificationLivre", (requete,reponse) => {
+    const livreUpdate = {
+        nom : requete.body.titre,
+        auteur : requete.body.auteur,
+        pages : requete.body.pages,
+        desc : requete.body.desc,
+    }
+    livreSchema.updateOne({_id:requete.body.id}, livreUpdate)
+    .exec()
+    .then(resultat => {        
+        requete.session.message = {
+            type : 'success',
+            contenu : 'modifciation effectuée'
+        }
+        reponse.redirect("/livres");
+    })
+    .catch(error => {
+        console.log(error);
+    });
+});
+
 routeur.post("/livres/delete/:id", (requete,reponse) => {
     livreSchema.findByIdAndDelete({_id:requete.params.id})
     .exec()

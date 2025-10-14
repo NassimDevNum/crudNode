@@ -4,7 +4,7 @@
 {% block contenu %} 
             {% if isModification %}
 
-            <form method="POST" action="">
+            <form method="POST" action="/livres/modificationLivre">
                 <div class="row m-2">
                     <div class="col-6">
                         <h2>Informations : </h2>
@@ -29,6 +29,7 @@
                         </div>
                     </div>
                 </div>
+                <input type="hidden" name="id" value="{{livre._id}}">
                 <input type="submit" class="btn btn-primary w-100"  value="Valider">
             </form>
             {% else %}
