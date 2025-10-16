@@ -33,6 +33,10 @@ serveur.set('trust proxy', 1);
 serveur.use((requete, response, suite) => {
   response.locals.message = requete.session.message;
   delete requete.session.message;
+
+    // Passer les infos de l'utilisateur connecté à toutes les vues
+  response.locals.user = requete.session.user || null;
+  
   suite();
 })
 
