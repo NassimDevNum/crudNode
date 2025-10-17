@@ -141,10 +141,10 @@ routeur.post("/login", (requete, reponse) => {
                         token: token
                     };
 
-                    // AJOUTE CES LIGNES
-console.log("🔍 User connecté:", requete.session.user);
-console.log("🔍 Role récupéré:", user.role);
-console.log("🔍 User complet depuis DB:", user);
+//                     // debug
+// console.log("🔍 User connecté:", requete.session.user);
+// console.log("🔍 Role récupéré:", user.role);
+// console.log("🔍 User complet depuis DB:", user);
 
                     requete.session.message = {
                         type: 'success',
