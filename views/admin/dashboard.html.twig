@@ -1,0 +1,130 @@
+{% extends "base.html.twig" %}
+
+{% block titre %}Dashboard Admin{% endblock %}
+
+{% block contenu %}
+<div class="container mt-4">
+    {% if message %}
+        <div class="alert alert-{{ message.type }}">
+            {{ message.contenu }}
+        </div>
+    {% endif %}
+
+    <h1 class="mb-4">👑 Dashboard Admin</h1>
+
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h3>{{ nbUsers }}</h3>
+                    <p>Utilisateurs inscrits</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h3>{{ nbLivres }}</h3>
+                    <p>Livres au total</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des utilisateurs -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>👥 Gestion des utilisateurs</h3>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Email</th>
+                        <th>Rôle</th>
+                        <th>Inscrit le</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td>{{ user.nom }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% if user.role == 'admin' %}
+                                    <span class="badge badge-danger">Admin</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">User</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.createdAt|date('d/m/Y') }}</td>
+                            <td>
+                                {% if user.role != 'admin' %}
+                                    <form method="POST" action="/admin/users/delete/{{ user._id }}" 
+                                          onSubmit="return confirm('Supprimer cet utilisateur et tous ses livres ?');" 
+                                          style="display:inline;">
+                                        <button class="btn btn-danger btn-sm">Supprimer</button>
+                                    </form>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Liste de tous les livres -->
+    <div class="card">
+        <div class="card-header">
+            <h3>📚 Tous les livres</h3>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Titre</th>
+                        <th>Auteur</th>
+                        <th>Pages</th>
+                        <th>Propriétaire</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for livre in livres %}
+                        <tr>
+                            <td>
+                                {% if livre.image %}
+                                    <img src="{{ livre.image }}" alt="{{ livre.nom }}" 
+                                         style="width: 50px; height: 67px; object-fit: cover;">
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ livre.nom }}</td>
+                            <td>{{ livre.auteur }}</td>
+                            <td>{{ livre.pages }}</td>
+                            <td>
+                                <span class="badge badge-info">{{ livre.userId.nom }}</span>
+                            </td>
+                            <td>
+                                <form method="POST" action="/admin/livres/delete/{{ livre._id }}" 
+                                      onSubmit="return confirm('Supprimer ce livre ?');" 
+                                      style="display:inline;">
+                                    <button class="btn btn-danger btn-sm">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

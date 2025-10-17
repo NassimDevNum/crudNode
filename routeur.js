@@ -23,10 +23,25 @@ function isAuthenticated(requete, reponse, suite) {
     }
 }
 
+// Middleware pour vérifier si l'utilisateur est admin
+function isAdmin(requete, reponse, suite) {
+    if (requete.session.user && requete.session.user.role === 'admin') {
+        // L'utilisateur est admin, on continue
+        suite();
+    } else {
+        // L'utilisateur n'est pas admin
+        requete.session.message = {
+            type: 'danger',
+            contenu: 'Accès refusé : vous devez être administrateur'
+        };
+        reponse.redirect("/livres");
+    }
+}
+
 // ========== ROUTES PUBLIQUES ==========
-routeur.get("/", (requete, reponse) => {
-    reponse.render("accueil.html.twig")
-});
+// routeur.get("/", (requete, reponse) => {
+//     reponse.render("accueil.html.twig")
+// });
 
 // Route pour afficher le formulaire d'inscription
 routeur.get("/register", (requete, reponse) => {
@@ -122,8 +137,14 @@ routeur.post("/login", (requete, reponse) => {
                         id: user._id,
                         nom: user.nom,
                         email: user.email,
+                        role: user.role,  // ← Ajouter le rôle
                         token: token
                     };
+
+                    // AJOUTE CES LIGNES
+console.log("🔍 User connecté:", requete.session.user);
+console.log("🔍 Role récupéré:", user.role);
+console.log("🔍 User complet depuis DB:", user);
 
                     requete.session.message = {
                         type: 'success',
@@ -151,6 +172,104 @@ routeur.get("/logout", (requete, reponse) => {
     requete.session.destroy();
     reponse.redirect("/");
 });
+
+// ========== ROUTES ADMIN ==========
+
+// Dashboard Admin
+routeur.get("/admin", isAuthenticated, isAdmin, (requete, reponse) => {
+    // Récupérer les statistiques
+    Promise.all([
+        userSchema.countDocuments(),  // Nombre total d'utilisateurs
+        livreSchema.countDocuments(), // Nombre total de livres
+        userSchema.find().select('nom email role createdAt'), // Liste des users
+        livreSchema.find().populate('userId', 'nom email')    // Tous les livres avec infos user
+    ])
+    .then(([nbUsers, nbLivres, users, livres]) => {
+        reponse.render("admin/dashboard.html.twig", {
+            nbUsers: nbUsers,
+            nbLivres: nbLivres,
+            users: users,
+            livres: livres,
+            message: reponse.locals.message
+        });
+    })
+    .catch(error => {
+        console.log(error);
+        reponse.status(500).send("Erreur serveur");
+    });
+});
+
+// Supprimer un utilisateur (ADMIN uniquement)
+routeur.post("/admin/users/delete/:id", isAuthenticated, isAdmin, (requete, reponse) => {
+    const userId = requete.params.id;
+    
+    // Empêcher l'admin de se supprimer lui-même
+    if (userId === requete.session.user.id.toString()) {
+        requete.session.message = {
+            type: 'danger',
+            contenu: 'Vous ne pouvez pas supprimer votre propre compte'
+        };
+        return reponse.redirect("/admin");
+    }
+    
+    // Supprimer tous les livres de cet utilisateur
+    livreSchema.deleteMany({ userId: userId })
+        .then(() => {
+            // Puis supprimer l'utilisateur
+            return userSchema.findByIdAndDelete(userId);
+        })
+        .then(() => {
+            requete.session.message = {
+                type: 'success',
+                contenu: 'Utilisateur et ses livres supprimés'
+            };
+            reponse.redirect("/admin");
+        })
+        .catch(error => {
+            console.log(error);
+            requete.session.message = {
+                type: 'danger',
+                contenu: 'Erreur lors de la suppression'
+            };
+            reponse.redirect("/admin");
+        });
+});
+
+// Supprimer n'importe quel livre (ADMIN uniquement)
+routeur.post("/admin/livres/delete/:id", isAuthenticated, isAdmin, (requete, reponse) => {
+    livreSchema.findByIdAndDelete(requete.params.id)
+        .then(() => {
+            requete.session.message = {
+                type: 'success',
+                contenu: 'Livre supprimé par l\'admin'
+            };
+            reponse.redirect("/admin");
+        })
+        .catch(error => {
+            console.log(error);
+            requete.session.message = {
+                type: 'danger',
+                contenu: 'Erreur lors de la suppression'
+            };
+            reponse.redirect("/admin");
+        });
+});
+
+
+// ========== ROUTES POUR AFFICHER LES LIVRE A L'ACCUEIL (LIVRES) ==========
+
+routeur.get("/", async (req, res) => {
+    try {
+        // On récupère tous les livres
+        const livres = await livreSchema.find(); // sans filtre userId
+        res.render("accueil.html.twig", { livres: livres, message: req.session.message || null });
+        delete req.session.message;
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Erreur serveur");
+    }
+});
+
 
 // ========== ROUTES PROTÉGÉES (LIVRES) ==========
 

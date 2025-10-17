@@ -13,6 +13,7 @@
                 <th>Image</th>
                 <th>Titre</th>
                 <th>Auteur</th>
+                <th>Page</th>
                 <th>Nombre de pages</th>
                 <th colspan="2">Actions</th>
             </tr>
@@ -20,6 +21,7 @@
         <tbody>
             {% for livre in liste %}
                 <tr>
+                    <td><img src="{{ livre.image }}" alt="{{ livre.image }}" width="100"></td>
                     <td><a href="/livres/{{livre._id}}">{{livre.nom}}</a></td>
                     <td>{{livre.auteur}}</td>
                     <td>{{livre.pages}}</td>

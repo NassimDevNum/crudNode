@@ -22,7 +22,7 @@ mongoose.connect("mongodb://localhost/biblio2")
 
 
 
-
+serveur.use('/uploads', express.static('uploads'));
 
 serveur.use(express.static("public"));
 
