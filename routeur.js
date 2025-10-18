@@ -199,6 +199,9 @@ routeur.get("/admin", isAuthenticated, isAdmin, (requete, reponse) => {
     });
 });
 
+
+
+
 // Supprimer un utilisateur (ADMIN uniquement)
 routeur.post("/admin/users/delete/:id", isAuthenticated, isAdmin, (requete, reponse) => {
     const userId = requete.params.id;
@@ -234,6 +237,24 @@ routeur.post("/admin/users/delete/:id", isAuthenticated, isAdmin, (requete, repo
             reponse.redirect("/admin");
         });
 });
+
+// Modifier n'importe quel livre (ADMIN uniquement)
+
+// routeur.get("/livres/modifier/:id", isAuthenticated, isAdmin, (requete, response) => {
+//     livreSchema.findById(requete.params.id)
+//     .exec()
+//     .then(livre => { 
+//         reponse.render("livre/livre.html.twig",{livre : livre, isModification:true})
+//     })
+//      .catch(error => {
+//             console.log(error);
+//             requete.session.message = {
+//                 type: 'danger',
+//                 contenu: 'Erreur lors de la modification'
+//             };
+//             reponse.redirect("/admin");
+//         });
+// })
 
 // Supprimer n'importe quel livre (ADMIN uniquement)
 routeur.post("/admin/livres/delete/:id", isAuthenticated, isAdmin, (requete, reponse) => {

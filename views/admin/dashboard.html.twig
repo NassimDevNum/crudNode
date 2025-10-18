@@ -114,11 +114,8 @@
                                 <span class="badge badge-info">{{ livre.userId.nom }}</span>
                             </td>
                             <td>
-                                <form method="POST" action="{{ livre._id }}" 
-                                      onSubmit="return confirm('Modifier ce livre ?');" 
-                                      style="display:inline;">
-                                    <button class="btn btn-warning btn-sm">Modifier</button>
-                                </form>
+                                <a href="/livre/modification/{{ livre._id }}" class="btn btn-warning btn-sm">Modifier</a>
+
                                 <form method="POST" action="/admin/livres/delete/{{ livre._id }}" 
                                       onSubmit="return confirm('Supprimer ce livre ?');" 
                                       style="display:inline;">
