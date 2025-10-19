@@ -238,23 +238,68 @@ routeur.post("/admin/users/delete/:id", isAuthenticated, isAdmin, (requete, repo
         });
 });
 
-// Modifier n'importe quel livre (ADMIN uniquement)
+// Afficher le formulaire de modification (ADMIN)
+routeur.get("/admin/livres/edit/:id", isAuthenticated, isAdmin, (requete, reponse) => {
+    livreSchema.findById(requete.params.id)
+        .populate('userId', 'nom email')
+        .exec()
+        .then(livre => {
+            if (!livre) {
+                requete.session.message = {
+                    type: 'danger',
+                    contenu: 'Livre introuvable'
+                };
+                return reponse.redirect("/admin");
+            }
+            // ⬇️ Change juste cette ligne
+            reponse.render("admin/editLivre.html.twig", {
+                livre: livre
+            });
+        })
+        .catch(error => {
+            console.log(error);
+            requete.session.message = {
+                type: 'danger',
+                contenu: 'Erreur lors de la récupération du livre'
+            };
+            reponse.redirect("/admin");
+        });
+});
 
-// routeur.get("/livres/modifier/:id", isAuthenticated, isAdmin, (requete, response) => {
-//     livreSchema.findById(requete.params.id)
-//     .exec()
-//     .then(livre => { 
-//         reponse.render("livre/livre.html.twig",{livre : livre, isModification:true})
-//     })
-//      .catch(error => {
-//             console.log(error);
-//             requete.session.message = {
-//                 type: 'danger',
-//                 contenu: 'Erreur lors de la modification'
-//             };
-//             reponse.redirect("/admin");
-//         });
-// })
+// Traiter la modification (ADMIN)
+routeur.post("/admin/livres/edit/:id", isAuthenticated, isAdmin, (requete, reponse) => {
+    const livreUpdate = {
+        nom: requete.body.titre,
+        auteur: requete.body.auteur,
+        pages: requete.body.pages,
+        desc: requete.body.desc,
+    };
+
+    livreSchema.updateOne({ _id: requete.params.id }, livreUpdate)
+        .exec()
+        .then(resultat => {
+            if (resultat.matchedCount === 0) {
+                requete.session.message = {
+                    type: 'danger',
+                    contenu: 'Livre introuvable'
+                };
+            } else {
+                requete.session.message = {
+                    type: 'success',
+                    contenu: 'Livre modifié par l\'admin avec succès !'
+                };
+            }
+            reponse.redirect("/admin");
+        })
+        .catch(error => {
+            console.log(error);
+            requete.session.message = {
+                type: 'danger',
+                contenu: 'Erreur lors de la modification'
+            };
+            reponse.redirect("/admin");
+        });
+});
 
 // Supprimer n'importe quel livre (ADMIN uniquement)
 routeur.post("/admin/livres/delete/:id", isAuthenticated, isAdmin, (requete, reponse) => {
@@ -381,7 +426,9 @@ routeur.get("/livre/modification/:id", isAuthenticated, (requete, reponse) => {
     });
 });
 
-// Modifier un livre
+
+
+// Modifier un livre// Modifier un livre
 routeur.post("/livres/modificationLivre", isAuthenticated, (requete, reponse) => {
     const livreUpdate = {
         nom: requete.body.titre,
@@ -389,30 +436,42 @@ routeur.post("/livres/modificationLivre", isAuthenticated, (requete, reponse) =>
         pages: requete.body.pages,
         desc: requete.body.desc,
     };
-    
-    livreSchema.updateOne({
-        _id: requete.body.id,
-        userId: requete.session.user.id
-    }, livreUpdate)
-    .exec()
-    .then(resultat => {
-        if (resultat.matchedCount === 0) {
+
+    // Si l'utilisateur est admin → peut modifier n'importe quel livre
+    // Sinon → peut modifier uniquement les siens
+    const filtre = (requete.session.user.role === "admin")
+        ? { _id: requete.body.id }
+        : { _id: requete.body.id, userId: requete.session.user.id };
+
+
+    livreSchema.updateOne(filtre, livreUpdate)
+        .then(resultat => {
+            console.log("Résultat update :", resultat);
+
+            if (resultat.matchedCount === 0) {
+                requete.session.message = {
+                    type: 'danger',
+                    contenu: 'Livre introuvable ou vous n\'y avez pas accès'
+                };
+            } else {
+                requete.session.message = {
+                    type: 'success',
+                    contenu: 'Livre modifié avec succès'
+                };
+            }
+
+            reponse.redirect("/livres");
+        })
+        .catch(error => {
+            console.log(error);
             requete.session.message = {
                 type: 'danger',
-                contenu: 'Livre introuvable ou vous n\'y avez pas accès'
+                contenu: 'Erreur lors de la modification'
             };
-        } else {
-            requete.session.message = {
-                type: 'success',
-                contenu: 'Modification effectuée'
-            };
-        }
-        reponse.redirect("/livres");
-    })
-    .catch(error => {
-        console.log(error);
-    });
+            reponse.redirect("/livres");
+        });
 });
+
 
 // Supprimer un livre
 routeur.post("/livres/delete/:id", isAuthenticated, (requete, reponse) => {

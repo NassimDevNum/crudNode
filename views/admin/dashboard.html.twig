@@ -114,7 +114,7 @@
                                 <span class="badge badge-info">{{ livre.userId.nom }}</span>
                             </td>
                             <td>
-                                <a href="/livre/modification/{{ livre._id }}" class="btn btn-warning btn-sm">Modifier</a>
+                                <a href="/admin/livres/edit/{{ livre._id }}" class="btn btn-warning btn-sm">Modifier</a>
 
                                 <form method="POST" action="/admin/livres/delete/{{ livre._id }}" 
                                       onSubmit="return confirm('Supprimer ce livre ?');" 
