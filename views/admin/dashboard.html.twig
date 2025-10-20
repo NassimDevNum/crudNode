@@ -62,7 +62,12 @@
                             </td>
                             <td>{{ user.createdAt|date('d/m/Y') }}</td>
                             <td>
+
+
                                 {% if user.role != 'admin' %}
+
+                                    <a href="/admin/user/edit/{{ user._id }}" class="btn btn-warning btn-sm">Modifier</a>
+
                                     <form method="POST" action="/admin/users/delete/{{ user._id }}" 
                                           onSubmit="return confirm('Supprimer cet utilisateur et tous ses livres ?');" 
                                           style="display:inline;">

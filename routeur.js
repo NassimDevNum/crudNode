@@ -301,6 +301,70 @@ routeur.post("/admin/livres/edit/:id", isAuthenticated, isAdmin, (requete, repon
         });
 });
 
+
+// modifiercation de user depuis le dashoboard admin
+
+// Afficher le formulaire de modification (ADMIN)
+routeur.get("/admin/user/edit/:id", isAuthenticated, isAdmin, (requete, reponse) => {
+    userSchema.findById(requete.params.id)
+        .exec()
+        .then(user => {
+            if (!user) {
+                requete.session.message = {
+                    type: 'danger',
+                    contenu: 'User introuvable'
+                };
+                return reponse.redirect("/admin");
+            }
+            reponse.render("admin/editUser.html.twig", {
+                user: user
+            });
+        })
+        .catch(error => {
+            console.log(error);
+            requete.session.message = {
+                type: 'danger',
+                contenu: 'Erreur lors de la récupération de l utilisateur'
+            };
+            reponse.redirect("/admin");
+        });
+});
+
+//pour recevoir les informations 
+routeur.post("/admin/user/edit/:id", isAuthenticated, isAdmin, (requete, reponse) => {
+    const userUpdate = {
+        nom: requete.body.nom,
+        email: requete.body.email,
+    };
+
+    userSchema.updateOne({ _id: requete.params.id }, userUpdate)
+        .exec()
+        .then(resultat => {
+            if (resultat.matchedCount === 0) {
+                requete.session.message = {
+                    type: 'danger',
+                    contenu: 'Utilisateir introuvable'
+                };
+            } else {
+                requete.session.message = {
+                    type: 'success',
+                    contenu: 'Utilisateur modifié par l\'admin avec succès !'
+                };
+            }
+            reponse.redirect("/admin");
+        })
+        .catch(error => {
+            console.log(error);
+            requete.session.message = {
+                type: 'danger',
+                contenu: 'Erreur lors de la modification'
+            };
+            reponse.redirect("/admin");
+        });
+});
+
+
+
 // Supprimer n'importe quel livre (ADMIN uniquement)
 routeur.post("/admin/livres/delete/:id", isAuthenticated, isAdmin, (requete, reponse) => {
     livreSchema.findByIdAndDelete(requete.params.id)
